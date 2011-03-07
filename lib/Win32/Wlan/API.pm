@@ -7,7 +7,7 @@ use Encode qw(decode);
 use Exporter 'import';
 
 use vars qw($VERSION $wlan_available %API @signatures @EXPORT_OK);
-$VERSION = '0.03';
+$VERSION = '0.04';
 
 sub Zero() { "\0\0\0\0" };
 # just in case we ever get a 64bit Win32::API
@@ -90,19 +90,19 @@ sub WlanEnumInterfaces {
     $API{ WlanEnumInterfaces }->Call($handle,0,$interfaces) == 0
         or croak $^E;
     my @items = _unpack_counted_array($interfaces,'a16 a512 V',16+512+4);
-    for (@items) {
+    @items = map {
         # First element is the GUUID of the interface
         # Name is in 16bit UTF
         $_->[1] = decode('UTF-16LE' => $_->[1]);
         $_->[1] =~ s/\0+$//;
         # The third element is the status of the interface
         
-        $_ = {
+        +{
             guuid => $_->[0],
             name =>  $_->[1],
             status => $_->[2],
         };
-    };
+    } @items;
     
     $interfaces = unpack 'V', $interfaces;
     WlanFreeMemory($interfaces);
@@ -223,7 +223,9 @@ Win32::Wlan::API - Access to the Win32 WLAN API
     if ($Win32::Wlan::available) {
         my $handle = WlanOpenHandle();
         my @interfaces = WlanEnumInterfaces($handle);
-        my $ih = $interfaces[0]->[0];
+        my $ih = $interfaces[0]->{guuid};
+        # Network adapters are identified by guuid
+        print $interfaces[0]->{name};
         my $info = WlanQueryCurrentConnection($handle,$ih);
         print "Connected to $info{ profile_name }\n";        
 

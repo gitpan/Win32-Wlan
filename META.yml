@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Win32-Wlan
-version:            0.03
+version:            0.04
 abstract:           Query wlan properties
 author:
     - Max Maischein <corion@cpan.org>
