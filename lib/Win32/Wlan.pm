@@ -10,7 +10,7 @@ use Win32::Wlan::API qw<
     $wlan_available
 >;
 use vars qw<$VERSION>;
-$VERSION = '0.04';
+$VERSION = '0.05';
 
 # Ideally, the handle should be (another) singleton
 # that fetches and keeps the handle until the application
@@ -127,7 +127,10 @@ when Wlan is switched off or no access point is in range.
 
 =cut
 
-sub connected { defined $_[0]->connection->{profile_name} };
+sub connected {
+    my $conn = $_[0]->connection;
+    defined $conn->{profile_name} && $conn->{profile_name}
+};
 
 =head2 C<< $wlan->connection >>
 
